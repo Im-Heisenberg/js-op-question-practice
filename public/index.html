@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1116" />
+<title>JS Output Practice</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+
+<header>
+  <button id="menuToggle" class="menu-toggle" aria-label="Toggle topics">
+    <span></span><span></span><span></span>
+  </button>
+  <h1>JS Output Practice</h1>
+  <div class="stats">
+    <span id="streak">🔥 0</span>
+    <span id="todayCount">Today: 0</span>
+    <button id="exportBtn">Export</button>
+    <button id="importBtn">Import</button>
+    <input type="file" id="importFile" accept=".json" hidden />
+    <button id="resetBtn" class="danger">Reset</button>
+  </div>
+</header>
+
+<div id="backdrop" class="backdrop"></div>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div class="sidebar-head">
+      <span>Topics</span>
+      <button id="closeSidebar" class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div id="topics"></div>
+  </aside>
+
+  <main>
+    <div class="mode-bar">
+      <button data-mode="practice" class="mode active">Practice</button>
+      <button data-mode="review" class="mode">Review</button>
+      <button data-mode="random" class="mode">Random</button>
+      <span id="counter"></span>
+    </div>
+
+    <div id="questionCard" class="card"></div>
+    <div id="emptyState" class="card empty">Select a topic to begin.</div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

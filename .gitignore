@@ -1,0 +1,56 @@
+# ---------- Dependencies ----------
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ---------- Source PDFs (personal, big, don't commit) ----------
+extractor/*.pdf
+*.pdf
+
+# ---------- Generated data ----------
+# Keep the shape but don't commit the real content if you'd rather keep it private.
+# Remove these two lines if you DO want questions.json tracked.
+data/questions.json
+public/questions.json
+
+# ---------- Progress exports (personal) ----------
+js-practice-progress-*.json
+*-progress-*.json
+
+# ---------- Logs ----------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- OS junk ----------
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# ---------- Editor / IDE ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------- Env / secrets (for when you add Firebase/Supabase) ----------
+.env
+.env.local
+.env.*.local
+*.key
+
+# ---------- Netlify / Vercel build caches ----------
+.netlify/
+.vercel/
+dist/
+build/
+
+# ---------- Temp ----------
+tmp/
+temp/
+*.tmp
