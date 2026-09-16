@@ -1,3 +1,64 @@
+// ---------- Heuristic code formatter ----------
+// Not a full parser — just enough to clean up PDF-extracted snippets.
+function formatCode(src) {
+  if (!src) return "";
+
+  let s = String(src).trim();
+
+  // 1. Normalize whitespace
+  s = s.replace(/\r\n?/g, "\n").replace(/[ \t]+/g, " ");
+  s = s.replace(/\n{3,}/g, "\n\n");
+
+  // 2. Protect strings & template literals from further edits
+  const strings = [];
+  s = s.replace(/(["'`])((?:\\.|(?!\1).)*)\1/g, (m) => {
+    strings.push(m);
+    return `\u0000STR${strings.length - 1}\u0000`;
+  });
+
+  // 3. Collapse everything to one line with single spaces (so we can re-break it)
+  s = s.replace(/\s+/g, " ").trim();
+
+  // 4. Insert semicolons where a statement clearly ends.
+  //    Rule: ')' or '}' or identifier followed by another statement start.
+  s = s.replace(/\)\s+(?=[A-Za-z_$])/g, ");\n");
+  s = s.replace(/(\w)\s+(?=(console|let|const|var|function|if|for|while|return|class|new)\b)/g, "$1;\n");
+  s = s.replace(/\}\s+(?=(console|let|const|var|function|if|for|while|return|class|new)\b)/g, "}\n");
+  s = s.replace(/;\s*/g, ";\n");
+
+  // 5. Break before/after braces for readability
+  s = s.replace(/\{\s*/g, " {\n");
+  s = s.replace(/\s*\}/g, "\n}");
+  s = s.replace(/\n\s*\n+/g, "\n");
+
+  // 6. Re-indent based on brace depth
+  const lines = s.split("\n").map((l) => l.trim()).filter(Boolean);
+  let depth = 0;
+  const out = [];
+  for (let line of lines) {
+    // Decrease depth if line starts with '}'
+    if (/^\}/.test(line)) depth = Math.max(0, depth - 1);
+    out.push("  ".repeat(depth) + line);
+    // Adjust depth for next line
+    const opens = (line.match(/\{/g) || []).length;
+    const closes = (line.match(/\}/g) || []).length;
+    depth += opens - closes;
+    // If line started with '}', we already decremented above; re-count only non-leading
+    if (/^\}/.test(line)) depth += 1; // fix double-count
+    if (depth < 0) depth = 0;
+  }
+  s = out.join("\n");
+
+  // 7. Restore strings
+  s = s.replace(/\u0000STR(\d+)\u0000/g, (_, i) => strings[+i]);
+
+  return s;
+}
+const FORMAT_CACHE = new Map();
+function getFormatted(code) {
+  if (!FORMAT_CACHE.has(code)) FORMAT_CACHE.set(code, formatCode(code));
+  return FORMAT_CACHE.get(code);
+}
 // ---------- Mobile drawer ----------
 const sidebar = document.getElementById("sidebar");
 const backdrop = document.getElementById("backdrop");
@@ -164,7 +225,11 @@ function renderQuestion() {
       <span class="badge">${q.difficulty}</span>
     </div>
     <div class="prompt">${q.prompt}</div>
-    <pre><code class="language-javascript">${escapeHtml(q.code)}</code></pre>
+    <div class="code-head">
+      <span class="code-label">Code</span>
+      <button class="format-btn" id="formatBtn" title="Reformat code">✨ Format</button>
+    </div>
+    <pre><code class="language-javascript" id="codeBlock">${escapeHtml(q.code)}</code></pre>
     <textarea id="userAnswer" placeholder="Your predicted output..." rows="3"></textarea>
     <div class="actions" id="actions">
       <button class="primary" id="revealBtn">Reveal answer</button>
@@ -175,7 +240,19 @@ function renderQuestion() {
   `;
 
   Prism.highlightAllUnder(card);
+  const codeBlock = document.getElementById("codeBlock");
+  const formatBtn = document.getElementById("formatBtn");
+  let isFormatted = false;
 
+  formatBtn.addEventListener("click", () => {
+    isFormatted = !isFormatted;
+    const nextCode = isFormatted ? getFormatted(q.code) : q.code;
+    codeBlock.textContent = nextCode;
+    codeBlock.className = "language-javascript";
+    Prism.highlightElement(codeBlock);
+    formatBtn.textContent = isFormatted ? "↩︎ Original" : "✨ Format";
+    formatBtn.classList.toggle("active", isFormatted);
+  });
   document.getElementById("revealBtn").addEventListener("click", reveal);
   document.getElementById("skipBtn").addEventListener("click", next);
 }
